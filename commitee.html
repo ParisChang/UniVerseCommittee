@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>UniVerse - Club Committee Dashboard</title>
+    <style>
+        :root {
+            --primary-color: #4a69bd;
+            --secondary-color: #1dd1a1;
+            --danger-color: #ff6b6b;
+            --warning-color: #feca57;
+            --light-bg: #f8f9fa;
+            --text-dark: #2f3542;
+            --text-light: #57606f;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        body { background: var(--light-bg); -webkit-text-size-adjust: 100%; }
+        .mobile-container { width: 100%; max-width: 430px; height: 100vh; margin: 0 auto; background: white; position: relative; overflow: hidden; display: flex; flex-direction: column;}
+
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            background: var(--light-bg);
+            overflow-y: auto;
+        }
+        .page.active { display: flex; }
+
+        /* Header */
+        .admin-header {
+            background: white;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e5e5ea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .admin-header h1 { font-size: 20px; color: var(--text-dark); }
+        .admin-header .back-to-public-btn { font-size: 14px; color: var(--primary-color); text-decoration: none; }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            padding-bottom: 90px;
+        }
+
+        /* Dashboard Stat Cards */
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .stat-card-lg { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .stat-card-lg .stat-label { font-size: 14px; color: var(--text-light); margin-bottom: 8px; }
+        .stat-card-lg .stat-value { font-size: 28px; font-weight: 700; color: var(--text-dark); }
+        .stat-card-lg .stat-change { font-size: 12px; font-weight: 500; margin-top: 5px; }
+        .stat-change.positive { color: var(--secondary-color); }
+        .stat-change.negative { color: var(--danger-color); }
+
+        /* Section Title */
+        .section-title-admin {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .section-title-admin .btn-secondary-sm {
+            font-size: 12px;
+            padding: 6px 12px;
+            background: var(--light-bg);
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        /* Quick Actions */
+        .quick-actions-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
+        .quick-action-btn { background: white; border-radius: 12px; padding: 15px 5px; text-align: center; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .quick-action-btn:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .quick-action-btn .icon { font-size: 28px; margin-bottom: 8px; }
+        .quick-action-btn .label { font-size: 12px; font-weight: 500; color: var(--text-light); }
+
+        /* Chart Placeholder */
+        .chart-placeholder {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: center;
+            color: #ccc;
+            border: 1px dashed #e5e5ea;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        /* Task List */
+        .task-list .task-item { background: white; border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .task-item-info h4 { font-size: 14px; font-weight: 600; color: var(--text-dark); }
+        .task-item-info p { font-size: 12px; color: var(--text-light); }
+        .task-item .due-date { font-size: 12px; color: var(--danger-color); font-weight: 500; }
+
+        /* Call to Action Card */
+        .cta-card {
+            background: linear-gradient(135deg, var(--primary-color), #34495e);
+            color: white;
+            padding: 25px;
+            border-radius: 16px;
+            cursor: pointer;
+        }
+        .cta-card h3 { font-size: 18px; margin-bottom: 8px; }
+        .cta-card p { font-size: 14px; opacity: 0.9; }
+
+        /* Member Analytics Page */
+        .member-list-item { display: flex; align-items: center; gap: 15px; background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .member-avatar { width: 45px; height: 45px; border-radius: 50%; background: var(--light-bg); overflow: hidden; flex-shrink: 0; }
+        .member-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .member-info { flex: 1; }
+        .member-name { font-weight: 600; }
+        .member-details { font-size: 12px; color: var(--text-light); }
+        .member-engagement-score { font-size: 16px; font-weight: 700; }
+        .score-high { color: var(--secondary-color); }
+        .score-medium { color: var(--warning-color); }
+        .score-low { color: var(--danger-color); }
+        .search-bar-admin { width: 100%; padding: 12px 16px; border: 1px solid #e5e5ea; border-radius: 12px; margin-bottom: 20px; font-size: 16px;}
+        
+        /* Committee Performance Page */
+        .committee-member-card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .committee-member-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .committee-member-info h3 { font-size: 16px; font-weight: 700; }
+        .committee-member-info .role { font-size: 13px; color: var(--primary-color); font-weight: 500; }
+        .committee-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding-top: 15px; border-top: 1px solid #f0f0f0; }
+        .committee-stat { font-size: 14px; }
+        .committee-stat .label { color: var(--text-light); }
+        .committee-stat .value { font-weight: 600; color: var(--text-dark); }
+        .contribution-score-container { text-align: center; }
+        .contribution-score-container .score { font-size: 24px; font-weight: 700; }
+
+        /* Finance Page */
+        .finance-summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .transaction-list .transaction-item { display: flex; align-items: center; gap: 15px; padding: 15px 0; border-bottom: 1px solid #e5e5ea; }
+        .transaction-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .transaction-income .transaction-icon { background: rgba(29, 209, 161, 0.1); color: var(--secondary-color); }
+        .transaction-expense .transaction-icon { background: rgba(255, 107, 107, 0.1); color: var(--danger-color); }
+        .transaction-details { flex: 1; }
+        .transaction-title { font-weight: 600; font-size: 14px; }
+        .transaction-date { font-size: 12px; color: var(--text-light); }
+        .transaction-amount { font-weight: 700; font-size: 16px; }
+        .transaction-amount.income { color: var(--secondary-color); }
+        .transaction-amount.expense { color: var(--danger-color); }
+
+        /* Task Management Page */
+        .kanban-board { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 15px; }
+        .kanban-column { min-width: 280px; background: var(--light-bg); border-radius: 16px; padding: 15px; }
+        .kanban-column h3 { font-size: 16px; margin-bottom: 15px; }
+        .kanban-task { background: white; border-radius: 8px; padding: 15px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .kanban-task p { font-size: 14px; margin-bottom: 10px; }
+        .task-meta { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-light); }
+        .task-assignees img { width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; margin-left: -8px; }
+        .task-assignees img:first-child { margin-left: 0; }
+
+        /* Sponsorship Page */
+        .sponsor-card { background: white; border-radius: 16px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; }
+        .sponsor-banner { height: 120px; background-color: var(--primary-color); }
+        .sponsor-banner img { width: 100%; height: 100%; object-fit: cover; }
+        .sponsor-info { padding: 20px; }
+        .sponsor-info h3 { font-size: 18px; margin-bottom: 5px; }
+        .sponsor-info .category { font-size: 12px; color: var(--primary-color); background: rgba(74, 105, 189, 0.1); padding: 4px 8px; border-radius: 20px; display: inline-block; margin-bottom: 15px; }
+        .sponsor-info p { font-size: 14px; color: var(--text-light); margin-bottom: 15px; line-height: 1.5; }
+        .btn-request-sponsor { width: 100%; background: var(--secondary-color); color: white; border: none; padding: 12px; font-size: 16px; font-weight: 600; border-radius: 8px; cursor: pointer; }
+
+        /* Modals */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1001; }
+        .modal-overlay.show { display: flex; }
+        .modal-content { background: white; width: 90%; max-width: 400px; border-radius: 20px; padding: 25px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-title { font-size: 22px; font-weight: bold; }
+        .close-button { background: none; border: none; font-size: 24px; cursor: pointer; color: #999; }
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500; }
+        .form-input { width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+        .btn-primary { width: 100%; padding: 14px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .onboarding-step { display: none; }
+        .onboarding-step.active { display: block; }
+        .progress-dots { text-align: center; margin: 20px 0; }
+        .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #ccc; margin: 0 5px; }
+        .dot.active { background: var(--primary-color); }
+        .goal-options .goal-option { background: var(--light-bg); border: 2px solid var(--light-bg); padding: 20px; border-radius: 12px; margin-bottom: 10px; cursor: pointer; }
+        .goal-options .goal-option.selected { border-color: var(--primary-color); background: rgba(74, 105, 189, 0.1); }
+        
+        /* Financial Report Modal */
+        #financial-report-modal .modal-content { max-width: 500px; }
+        .report-header { text-align: center; margin-bottom: 20px; }
+        .report-header h3 { font-size: 20px; margin-bottom: 5px; }
+        .report-header p { font-size: 14px; color: var(--text-light); }
+        .report-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; margin: 20px 0; }
+        .report-summary div h4 { font-size: 18px; font-weight: 700; }
+        .report-summary div p { font-size: 12px; color: var(--text-light); }
+        .report-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .report-table th, .report-table td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+        .report-table th { background: var(--light-bg); }
+        .report-table .income { color: var(--secondary-color); }
+        .report-table .expense { color: var(--danger-color); }
+
+        /* Bottom Navigation */
+        .admin-bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #eee; display: flex; justify-content: space-around; padding: 10px 0; padding-bottom: calc(10px + env(safe-area-inset-bottom)); box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+        .admin-nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 5px; cursor: pointer; color: #999; text-decoration: none; }
+        .admin-nav-item.active { color: var(--primary-color); }
+        .admin-nav-icon { font-size: 24px; margin-bottom: 4px; }
+        .admin-nav-label { font-size: 11px; font-weight: 500; }
+
+    </style>
+</head>
+<body>
+    <div class="mobile-container">
+
+        <!-- Committee Onboarding Modal -->
+        <div class="modal-overlay" id="onboarding-modal">
+            <div class="modal-content">
+                <!-- Step 1: Welcome -->
+                <div class="onboarding-step active" id="onboarding-step-1">
+                    <h2 class="modal-title">Welcome, Committee!</h2>
+                    <p style="margin: 15px 0; color: var(--text-light);">Let's set up your club's command center. This will only take a minute.</p>
+                    <button class="btn-primary" onclick="nextOnboardingStep(2)">Get Started</button>
+                </div>
+
+                <!-- Step 2: Set Goals -->
+                <div class="onboarding-step" id="onboarding-step-2">
+                    <h2 class="modal-title">What's your main goal?</h2>
+                    <p style="margin: 15px 0 20px; color: var(--text-light);">We'll help you focus on what matters most.</p>
+                    <div class="goal-options">
+                        <div class="goal-option" onclick="selectGoal(this)">
+                            <h4>🚀 Grow Membership</h4>
+                            <p>Attract more students to join your club.</p>
+                        </div>
+                        <div class="goal-option" onclick="selectGoal(this)">
+                            <h4>🎉 Increase Engagement</h4>
+                            <p>Get more members to participate in events.</p>
+                        </div>
+                        <div class="goal-option" onclick="selectGoal(this)">
+                            <h4>💰 Find Sponsors</h4>
+                            <p>Secure funding and support for your club.</p>
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="nextOnboardingStep(3)">Next</button>
+                </div>
+
+                <!-- Step 3: Invite Team -->
+                <div class="onboarding-step" id="onboarding-step-3">
+                    <h2 class="modal-title">Build Your Team</h2>
+                    <p style="margin: 15px 0 20px; color: var(--text-light);">Invite your fellow committee members.</p>
+                    <div class="form-group">
+                        <label class="form-label">Member's Email</label>
+                        <input type="email" class="form-input" placeholder="e.g., vice.president@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Role</label>
+                        <select class="form-input">
+                            <option>President</option>
+                            <option>Vice President</option>
+                            <option>Secretary</option>
+                            <option>Treasurer</option>
+                            <option>Member</option>
+                        </select>
+                    </div>
+                    <button class="btn-primary" style="background: var(--secondary-color); margin-bottom: 10px;" onclick="alert('Invitation sent!')">Send Invite</button>
+                    <button class="btn-primary" onclick="finishOnboarding()">Finish & Go to Dashboard</button>
+                </div>
+
+                <div class="progress-dots">
+                    <span class="dot active" data-step="1"></span>
+                    <span class="dot" data-step="2"></span>
+                    <span class="dot" data-step="3"></span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Boost Modal -->
+        <div class="modal-overlay" id="boost-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">🚀 Boost Your Club</h2>
+                    <button class="close-button" onclick="closeModal('boost-modal')">×</button>
+                </div>
+                <form onsubmit="alert('Boost campaign started!'); closeModal('boost-modal'); return false;">
+                    <div class="form-group">
+                        <label class="form-label">What to boost?</label>
+                        <select class="form-input">
+                            <option>Club Profile (General Awareness)</option>
+                            <option>Upcoming Event: Annual Hackathon</option>
+                            <option>Recruitment Drive</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Target Audience</label>
+                        <select class="form-input">
+                            <option>Our University Only</option>
+                            <option>All Universities in Klang Valley</option>
+                            <option>All Universities Nationwide</option>
+                        </select>
+                    </div>
+                     <div class="form-group">
+                        <label class="form-label">Budget (RM)</label>
+                        <input type="number" class="form-input" placeholder="e.g., 50" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Duration</label>
+                        <select class="form-input">
+                            <option>3 Days</option>
+                            <option>7 Days</option>
+                            <option>14 Days</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary">Launch Boost</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- NEW: Financial Report Modal -->
+        <div class="modal-overlay" id="financial-report-modal">
+            <div class="modal-content">
+                 <div class="modal-header">
+                    <h2 class="modal-title">Financial Report</h2>
+                    <button class="close-button" onclick="closeModal('financial-report-modal')">×</button>
+                </div>
+                <div class="report-header">
+                    <h3>Tech Innovators Club</h3>
+                    <p>Period: 01 Nov 2023 - 30 Nov 2023</p>
+                </div>
+                <div class="report-summary">
+                    <div>
+                        <h4 class="income">+ RM 500.00</h4>
+                        <p>Total Income</p>
+                    </div>
+                     <div>
+                        <h4 class="expense">- RM 325.00</h4>
+                        <p>Total Expenses</p>
+                    </div>
+                     <div>
+                        <h4 style="color: var(--primary-color);">RM 175.00</h4>
+                        <p>Net Balance</p>
+                    </div>
+                </div>
+                <table class="report-table">
+                    <thead>
+                        <tr><th>Date</th><th>Description</th><th>Amount</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Nov 28</td><td>Semester Membership Fees</td><td class="income">+500.00</td></tr>
+                        <tr><td>Nov 22</td><td>Pizza for Workshop</td><td class="expense">-75.00</td></tr>
+                        <tr><td>Nov 15</td><td>Hackathon Prizes</td><td class="expense">-250.00</td></tr>
+                    </tbody>
+                </table>
+                <button class="btn-primary" style="margin-top: 25px;" onclick="alert('Downloading report as PDF...')">Download PDF</button>
+            </div>
+        </div>
+
+        <!-- Main Content Pages -->
+        <div id="committee-dashboard-page" class="page">
+            <div class="admin-header">
+                <h1>Dashboard</h1>
+                <a href="#" class="back-to-public-btn" onclick="alert('Returning to public club view')">View Public Profile</a>
+            </div>
+            <div class="content-area">
+                <div class="dashboard-grid">
+                    <div class="stat-card-lg">
+                        <div class="stat-label">Active Members</div>
+                        <div class="stat-value">125</div>
+                        <div class="stat-change positive">+8 this week</div>
+                    </div>
+                    <div class="stat-card-lg">
+                        <div class="stat-label">Engagement Rate</div>
+                        <div class="stat-value">68%</div>
+                        <div class="stat-change positive">+5% vs last month</div>
+                    </div>
+                </div>
+                
+                <section style="margin-bottom: 25px;">
+                    <div class="section-title-admin">Quick Actions</div>
+                    <div class="quick-actions-grid">
+                        <div class="quick-action-btn" onclick="alert('Navigating to Event Creation...')">
+                            <div class="icon">➕</div>
+                            <div class="label">New Event</div>
+                        </div>
+                        <div class="quick-action-btn" onclick="alert('Opening announcement editor...')">
+                            <div class="icon">📢</div>
+                            <div class="label">Announce</div>
+                        </div>
+                        <div class="quick-action-btn" onclick="goToPage('sponsorship-page')">
+                            <div class="icon">🤝</div>
+                            <div class="label">Sponsors</div>
+                        </div>
+                        <div class="quick-action-btn" onclick="alert('Opening Invite panel...')">
+                            <div class="icon">📧</div>
+                            <div class="label">Invite</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section style="margin-bottom: 25px;">
+                     <div class="section-title-admin">Engagement This Month</div>
+                     <div class="chart-placeholder">[ Bar Chart Showing Weekly Engagement ]</div>
+                </section>
+                
+                <section style="margin-bottom: 25px;">
+                     <div class="section-title-admin">Your Tasks</div>
+                     <div class="task-list">
+                         <div class="task-item">
+                            <div class="task-item-info">
+                                <h4>Finalize Hackathon Venue</h4>
+                                <p>Assigned to: You</p>
+                            </div>
+                            <div class="due-date">Due Tommorow</div>
+                         </div>
+                         <div class="task-item">
+                            <div class="task-item-info">
+                                <h4>Design Promotional Poster</h4>
+                                <p>Assigned to: Sarah</p>
+                            </div>
+                         </div>
+                     </div>
+                </section>
+                
+                 <section>
+                    <div class="cta-card" onclick="showModal('boost-modal')">
+                        <h3>Supercharge Your Reach!</h3>
+                        <p>Boost your club or event to thousands of students across campuses. Tap here to start.</p>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <div id="member-analytics-page" class="page">
+            <div class="admin-header"><h1>Member Analytics</h1></div>
+            <div class="content-area">
+                <input type="text" class="search-bar-admin" placeholder="Search members...">
+                <div class="member-list">
+                    <div class="member-list-item">
+                        <div class="member-avatar"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" alt="Member Avatar"></div>
+                        <div class="member-info">
+                            <div class="member-name">Alex Chen</div>
+                            <p class="member-details">Events Attended: 5 | Last Active: 2h ago</p>
+                        </div>
+                        <div class="member-engagement-score score-high">92</div>
+                    </div>
+                     <div class="member-list-item">
+                        <div class="member-avatar"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" alt="Member Avatar"></div>
+                        <div class="member-info">
+                            <div class="member-name">Mia Rodriguez</div>
+                            <p class="member-details">Events Attended: 3 | Last Active: 1d ago</p>
+                        </div>
+                        <div class="member-engagement-score score-medium">65</div>
+                    </div>
+                    <div class="member-list-item">
+                        <div class="member-avatar"><img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&h=100&fit=crop" alt="Member Avatar"></div>
+                        <div class="member-info">
+                            <div class="member-name">David Lee</div>
+                            <p class="member-details">Events Attended: 1 | Last Active: 3w ago</p>
+                        </div>
+                        <div class="member-engagement-score score-low">21</div>
+                    </div>
+                    <div class="member-list-item">
+                        <div class="member-avatar"><img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop" alt="Member Avatar"></div>
+                        <div class="member-info">
+                            <div class="member-name">Chloe Tan</div>
+                            <p class="member-details">Events Attended: 6 | Last Active: 2d ago</p>
+                        </div>
+                        <div class="member-engagement-score score-high">95</div>
+                    </div>
+                     <div class="member-list-item">
+                        <div class="member-avatar"><img src="https://images.unsplash.com/photo-1521119989659-a83eee488004?w=100&h=100&fit=crop" alt="Member Avatar"></div>
+                        <div class="member-info">
+                            <div class="member-name">Jordan Smith</div>
+                            <p class="member-details">Events Attended: 2 | Last Active: 5d ago</p>
+                        </div>
+                        <div class="member-engagement-score score-medium">55</div>
+                    </div>
+                     <div class="member-list-item">
+                        <div class="member-avatar"><img src="https://images.unsplash.com/photo-1554151228-14d9def656e4?w=100&h=100&fit=crop" alt="Member Avatar"></div>
+                        <div class="member-info">
+                            <div class="member-name">Priya Sharma</div>
+                            <p class="member-details">Events Attended: 0 | Last Active: 2mo ago</p>
+                        </div>
+                        <div class="member-engagement-score score-low">8</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- NEW: Committee Performance Page -->
+        <div id="committee-performance-page" class="page">
+            <div class="admin-header"><h1>Team Performance</h1></div>
+            <div class="content-area">
+                <div class="section-title-admin">Your Committee</div>
+                <div class="committee-list">
+                    <div class="committee-member-card">
+                        <div class="committee-member-header">
+                            <div class="member-avatar"><img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop" alt="Committee Member"></div>
+                            <div class="committee-member-info">
+                                <h3>Sarah Williams (You)</h3>
+                                <div class="role">President</div>
+                            </div>
+                        </div>
+                        <div class="committee-stats-grid">
+                            <div class="committee-stat"><span class="label">Tasks Completed: </span><span class="value">12</span></div>
+                            <div class="contribution-score-container">
+                                <div class="score score-high">94</div>
+                                <div class="label">Contribution Score</div>
+                            </div>
+                            <div class="committee-stat"><span class="label">Events Managed: </span><span class="value">4</span></div>
+                            <div class="committee-stat"><span class="label">Last Active: </span><span class="value">Now</span></div>
+                        </div>
+                    </div>
+
+                    <div class="committee-member-card">
+                        <div class="committee-member-header">
+                            <div class="member-avatar"><img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop" alt="Committee Member"></div>
+                            <div class="committee-member-info">
+                                <h3>Mike Johnson</h3>
+                                <div class="role">Vice President</div>
+                            </div>
+                        </div>
+                        <div class="committee-stats-grid">
+                            <div class="committee-stat"><span class="label">Tasks Completed: </span><span class="value">9</span></div>
+                             <div class="contribution-score-container">
+                                <div class="score score-medium">78</div>
+                                <div class="label">Contribution Score</div>
+                            </div>
+                            <div class="committee-stat"><span class="label">Events Managed: </span><span class="value">2</span></div>
+                            <div class="committee-stat"><span class="label">Last Active: </span><span class="value">1h ago</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="finance-dashboard-page" class="page">
+            <div class="admin-header"><h1>Club Finances</h1></div>
+            <div class="content-area">
+                <div class="finance-summary-grid">
+                    <div class="stat-card-lg">
+                        <div class="stat-label">Current Budget</div>
+                        <div class="stat-value" style="color: var(--secondary-color);">RM 850.50</div>
+                    </div>
+                     <div class="stat-card-lg">
+                        <div class="stat-label">Pending Claims</div>
+                        <div class="stat-value" style="color: var(--danger-color);">RM 112.00</div>
+                    </div>
+                </div>
+                <div class="section-title-admin">
+                    <span>Expense Breakdown</span>
+                    <button class="btn-secondary-sm" onclick="showModal('financial-report-modal')">Generate Report</button>
+                </div>
+                <div class="chart-placeholder">[ Pie Chart of Expenses by Category ]</div>
+                <div class="section-title-admin">Recent Transactions
+                    <button class="btn-primary" style="font-size: 12px; padding: 8px 12px; width: auto;">+ Add</button>
+                </div>
+                <div class="transaction-list">
+                    <div class="transaction-item transaction-income">
+                        <div class="transaction-icon">💰</div>
+                        <div class="transaction-details">
+                            <div class="transaction-title">Semester Membership Fees</div>
+                            <div class="transaction-date">3 days ago</div>
+                        </div>
+                        <div class="transaction-amount income">+ RM 500.00</div>
+                    </div>
+                    <div class="transaction-item transaction-expense">
+                        <div class="transaction-icon">🍕</div>
+                        <div class="transaction-details">
+                            <div class="transaction-title">Pizza for Workshop</div>
+                            <div class="transaction-date">1 week ago</div>
+                        </div>
+                        <div class="transaction-amount expense">- RM 75.00</div>
+                    </div>
+                    <div class="transaction-item transaction-expense">
+                        <div class="transaction-icon">🏆</div>
+                        <div class="transaction-details">
+                            <div class="transaction-title">Hackathon Prizes</div>
+                            <div class="transaction-date">2 weeks ago</div>
+                        </div>
+                        <div class="transaction-amount expense">- RM 250.00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="task-management-page" class="page">
+            <div class="admin-header"><h1>Committee Tasks</h1></div>
+            <div class="content-area">
+                 <div class="kanban-board">
+                    <div class="kanban-column">
+                        <h3>To Do (3)</h3>
+                        <div class="kanban-task">
+                            <p>Book venue for Annual Dinner</p>
+                            <div class="task-meta">
+                                <div class="task-assignees"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=50&h=50&fit=crop" alt="user"></div>
+                                <span>Due: Dec 15</span>
+                            </div>
+                        </div>
+                        <div class="kanban-task">
+                            <p>Contact 'PrintShop Pro' for T-Shirt quotes</p>
+                             <div class="task-meta">
+                                <div class="task-assignees"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50&h=50&fit=crop" alt="user"></div>
+                                <span>Due: Dec 18</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="kanban-column">
+                        <h3>In Progress (1)</h3>
+                         <div class="kanban-task">
+                            <p>Draft proposal for Microsoft sponsorship</p>
+                            <div class="task-meta">
+                                <div class="task-assignees"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=50&h=50&fit=crop" alt="user"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=50&h=50&fit=crop" alt="user"></div>
+                                <span>Due: Dec 20</span>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="kanban-column">
+                        <h3>Done (4)</h3>
+                        <div class="kanban-task" style="opacity: 0.6;">
+                            <p>Post welcome message for new members</p>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+        </div>
+
+        <div id="sponsorship-page" class="page">
+            <div class="admin-header"><h1>Find Sponsors</h1></div>
+            <div class="content-area">
+                <div class="sponsor-card">
+                    <div class="sponsor-banner">
+                        <img src="https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=800&h=300&fit=crop" alt="Gym Banner">
+                    </div>
+                    <div class="sponsor-info">
+                        <h3>Elite Fitness Gym</h3>
+                        <span class="category">Health & Wellness</span>
+                        <p>We provide student discounts and are open to sponsoring sports-related events with merchandise and vouchers.</p>
+                        <button class="btn-request-sponsor" onclick="alert('Sponsorship request sent to Elite Fitness Gym!')">Request Sponsorship</button>
+                    </div>
+                </div>
+                 <div class="sponsor-card">
+                    <div class="sponsor-banner">
+                        <img src="https://images.unsplash.com/photo-1556740758-90de374c12ad?w=800&h=300&fit=crop" alt="Tech Banner">
+                    </div>
+                    <div class="sponsor-info">
+                        <h3>Innovate Solutions Inc.</h3>
+                        <span class="category">Technology</span>
+                        <p>Looking to sponsor hackathons and tech workshops. We can provide judges, mentors, and cash prizes.</p>
+                        <button class="btn-request-sponsor" onclick="alert('Sponsorship request sent to Innovate Solutions Inc.!')">Request Sponsorship</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <nav class="admin-bottom-nav">
+            <a href="#" class="admin-nav-item active" onclick="goToPage('committee-dashboard-page')">
+                <span class="admin-nav-icon">📊</span>
+                <span class="admin-nav-label">Dashboard</span>
+            </a>
+            <a href="#" class="admin-nav-item" onclick="goToPage('member-analytics-page')">
+                <span class="admin-nav-icon">👥</span>
+                <span class="admin-nav-label">Members</span>
+            </a>
+            <a href="#" class="admin-nav-item" onclick="goToPage('committee-performance-page')">
+                <span class="admin-nav-icon">⭐</span>
+                <span class="admin-nav-label">Team</span>
+            </a>
+            <a href="#" class="admin-nav-item" onclick="goToPage('finance-dashboard-page')">
+                <span class="admin-nav-icon">💰</span>
+                <span class="admin-nav-label">Finance</span>
+            </a>
+            <a href="#" class="admin-nav-item" onclick="goToPage('task-management-page')">
+                <span class="admin-nav-icon">📋</span>
+                <span class="admin-nav-label">Tasks</span>
+            </a>
+             <a href="#" class="admin-nav-item" onclick="goToPage('sponsorship-page')">
+                <span class="admin-nav-icon">🤝</span>
+                <span class="admin-nav-label">Sponsors</span>
+            </a>
+        </nav>
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Start with the onboarding modal
+        showModal('onboarding-modal');
+        goToPage('committee-dashboard-page');
+    });
+
+    function goToPage(pageId) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        const targetPage = document.getElementById(pageId);
+        if (targetPage) {
+            targetPage.classList.add('active');
+        } else {
+            console.error("Page not found: " + pageId);
+            document.getElementById('committee-dashboard-page').classList.add('active'); // Fallback
+        }
+        
+        document.querySelectorAll('.admin-nav-item').forEach(item => {
+            item.classList.remove('active');
+            if (item.getAttribute('onclick') === `goToPage('${pageId}')`) {
+                item.classList.add('active');
+            }
+        });
+    }
+
+    function showModal(modalId) {
+        document.getElementById(modalId)?.classList.add('show');
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId)?.classList.remove('show');
+    }
+
+    // Onboarding Logic
+    let currentStep = 1;
+    function nextOnboardingStep(step) {
+        document.querySelector(`#onboarding-step-${currentStep}`).classList.remove('active');
+        document.querySelector(`.progress-dots .dot[data-step="${currentStep}"]`).classList.remove('active');
+        
+        currentStep = step;
+
+        document.querySelector(`#onboarding-step-${currentStep}`).classList.add('active');
+        document.querySelector(`.progress-dots .dot[data-step="${currentStep}"]`).classList.add('active');
+    }
+
+    function selectGoal(element) {
+        document.querySelectorAll('.goal-option').forEach(el => el.classList.remove('selected'));
+        element.classList.add('selected');
+    }
+
+    function finishOnboarding() {
+        closeModal('onboarding-modal');
+        alert("🎉 Your committee dashboard is ready!");
+    }
+
+</script>
+</body>
+</html>
+Use code with caution.
+Html
