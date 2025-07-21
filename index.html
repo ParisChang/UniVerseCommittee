@@ -177,6 +177,126 @@
         .sponsor-info p { font-size: 14px; color: var(--text-light); margin-bottom: 15px; line-height: 1.5; }
         .btn-request-sponsor { width: 100%; background: var(--secondary-color); color: white; border: none; padding: 12px; font-size: 16px; font-weight: 600; border-radius: 8px; cursor: pointer; }
 
+        /* --- NEW: Venue Booking Page Styles --- */
+        .venue-search-header {
+            background: linear-gradient(135deg, var(--primary-color), #6a82fb);
+            padding: 15px 20px 20px 20px;
+        }
+        .venue-search-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .venue-search-input {
+            flex: 1;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: white;
+            font-size: 16px;
+        }
+        .venue-search-input::placeholder { color: rgba(255,255,255,0.8); }
+        .venue-filter-btn {
+            background: rgba(255,255,255,0.25);
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .venue-filter-chips {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+        }
+        .venue-filter-chips .chip {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .venue-filter-chips .chip.active {
+            background: white;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        .venue-list .venue-card {
+            display: flex;
+            background: white;
+            border-radius: 16px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 20px rgba(47,53,66,0.08);
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .venue-list .venue-card:hover { transform: translateY(-3px); }
+        .venue-card-image {
+            width: 110px;
+            flex-shrink: 0;
+        }
+        .venue-card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .venue-card-info {
+            padding: 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .venue-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .venue-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 1.2;
+        }
+        .cashback-tag {
+            background-color: var(--secondary-color);
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+            flex-shrink: 0;
+            margin-left: 8px;
+        }
+        .venue-rating {
+            font-size: 13px;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+        }
+        .venue-rating span { color: var(--warning-color); margin-right: 4px; }
+        .venue-price {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--danger-color);
+        }
+        .venue-meta-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 5px;
+        }
+        .meta-item { display: flex; align-items: center; gap: 4px; }
+
         /* Modals */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1001; }
         .modal-overlay.show { display: flex; }
@@ -398,9 +518,9 @@
                             <div class="icon">🤝</div>
                             <div class="label">Sponsors</div>
                         </div>
-                        <div class="quick-action-btn" onclick="alert('Opening Invite panel...')">
-                            <div class="icon">📧</div>
-                            <div class="label">Invite</div>
+                        <div class="quick-action-btn" onclick="goToPage('venue-booking-page')">
+                            <div class="icon">🏟️</div>
+                            <div class="label">Book Venue</div>
                         </div>
                     </div>
                 </section>
@@ -661,6 +781,81 @@
             </div>
         </div>
         
+        <!-- --- NEW: VENUE BOOKING PAGE --- -->
+        <div id="venue-booking-page" class="page">
+            <div class="admin-header">
+                <h1>Sports Hub</h1>
+                <a href="#" class="back-to-public-btn" onclick="goToPage('committee-dashboard-page')">Dashboard</a>
+            </div>
+            
+            <div class="venue-search-header">
+                <div class="venue-search-container">
+                    <input type="text" class="venue-search-input" placeholder="Search sports venues, courts...">
+                    <button class="venue-filter-btn">Filter</button>
+                </div>
+                <div class="venue-filter-chips">
+                    <button class="chip active">Nearby</button>
+                    <button class="chip">On-Campus</button>
+                    <button class="chip">Off-Campus</button>
+                    <button class="chip">Badminton</button>
+                    <button class="chip">Futsal</button>
+                </div>
+            </div>
+
+            <div class="content-area" style="padding-top: 15px;">
+                <div class="venue-list">
+                    <div class="venue-card" onclick="alert('Opening details for UniSports Complex...')">
+                        <div class="venue-card-image"><img src="https://timeboxhome.files.wordpress.com/2019/09/sungym.jpg?w=1024" alt="Gym"></div>
+                        <div class="venue-card-info">
+                            <div class="venue-card-header">
+                                <div class="venue-name">SunGym</div>
+                                <div class="cashback-tag">5% Cashback</div>
+                            </div>
+                            <div class="venue-rating"><span>⭐</span> 4.8 (156 reviews)</div>
+                            <div class="venue-price">RM 25-40 / hour</div>
+                            <div class="venue-meta-details">
+                                <div class="meta-item">📍 On Campus</div>
+                                <div class="meta-item">🕒 6AM-11PM</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="venue-card" onclick="alert('Opening details for University Aquatic Centre...')">
+                        <div class="venue-card-image"><img src="https://student.sunway.edu.my/sites/default/files/paragraph/image/2023-12/Sunway%20SL%20(4).png" alt="Swimming Pool"></div>
+                        <div class="venue-card-info">
+                             <div class="venue-card-header">
+                                <div class="venue-name">University Aquatic Centre</div>
+                                <div class="cashback-tag">5% Cashback</div>
+                            </div>
+                            <div class="venue-rating"><span>⭐</span> 4.9 (203 reviews)</div>
+                            <div class="venue-price">RM 15-25 / hour</div>
+                             <div class="venue-meta-details">
+                                <div class="meta-item">📍 On Campus</div>
+                                <div class="meta-item">🏊 Swimming</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                     <div class="venue-card" onclick="alert('Opening details for Premier Badminton Hall...')">
+                        <div class="venue-card-image"><img src="https://www.sunwaypyramid.com/static/shops/22430c8eaa69ee1534ed8fcefa74b7a6/w960-crop.jpg" alt="Badminton"></div>
+                        <div class="venue-card-info">
+                             <div class="venue-card-header">
+                                <div class="venue-name">Convention Center</div>
+                                <div class="cashback-tag">3% Cashback</div>
+                            </div>
+                            <div class="venue-rating"><span>⭐</span> 4.6 (98 reviews)</div>
+                            <div class="venue-price">RM tbc / hour</div>
+                             <div class="venue-meta-details">
+                                <div class="meta-item">📍 Off Campus (1.2km)</div>
+                                <div class="meta-item">Hall</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
         <nav class="admin-bottom-nav">
             <a href="#" class="admin-nav-item active" onclick="goToPage('committee-dashboard-page')">
                 <span class="admin-nav-icon">📊</span>
@@ -708,7 +903,12 @@
         
         document.querySelectorAll('.admin-nav-item').forEach(item => {
             item.classList.remove('active');
-            if (item.getAttribute('onclick') === `goToPage('${pageId}')`) {
+            // Special handling for venue booking page as it's not in the main nav
+            if (pageId === 'venue-booking-page') {
+                // Keep the dashboard icon active as it's the "home" of the admin section
+                 document.querySelector('.admin-nav-item[onclick="goToPage(\'committee-dashboard-page\')"]')?.classList.add('active');
+            }
+            else if (item.getAttribute('onclick') === `goToPage('${pageId}')`) {
                 item.classList.add('active');
             }
         });
@@ -747,5 +947,3 @@
 </script>
 </body>
 </html>
-Use code with caution.
-Html
